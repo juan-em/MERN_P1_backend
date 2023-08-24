@@ -107,7 +107,7 @@ const updateNote = asyncHandler(async (req, res) => {
   const { id, user, title, text, completed } = req.body;
 
   //Checking all fields
-  if (!id || !user || !title || !text || !completed) {
+  if (!id || !user || !title || !text || typeof completed !== 'boolean' ) {
     return res.status(400).json({ message: "All fields required" });
   }
 
@@ -120,14 +120,14 @@ const updateNote = asyncHandler(async (req, res) => {
   }
 
   //Finding the note
-  const note = await Note.findById(id).lean().exec();
+  const note = await Note.findById(id).exec();
   if (!note) {
-    return res.status(400).json({ message: "Note not found que" });
+    return res.status(400).json({ message: "Note not found que pasa" });
   }
 
   //Cheking for duplicate note's title
   const duplicate = await Note.findOne({ title }).lean().exec();
-  if (duplicate && duplicate?._id !== id) {
+  if (duplicate && duplicate?._id.toString() !== id) {
     return res.status(409).json({ message: `Note's title duplicate` });
   }
 
