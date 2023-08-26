@@ -16,7 +16,7 @@ const login = asyncHandler(async (req, res) => {
   if (!foundUser || !foundUser?.active) {
     return res
       .status(401)
-      .json({ message: "Unauthorized cause you are not active" });
+      .json({ message: "Unauthorized cause you doesnt exist or aren't active" });
   }
 
   const match = await bcrypt.compare(password, foundUser.password);
