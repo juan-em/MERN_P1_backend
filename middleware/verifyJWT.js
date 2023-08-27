@@ -15,7 +15,7 @@ const verifyJWT = (req, res, next) => {
         process.env.ACCESS_TOKEN_SECRET,
         (err, decoded) => {
             if (err) {
-                return res.status(400).json({message: 'Unauthorized'})
+                return res.status(403).json({message: 'Unauthorized'})
             }
             req.user = decoded.UserInfo.username
             req.roles = decoded.UserInfo.roles
