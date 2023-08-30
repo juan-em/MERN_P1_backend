@@ -8,23 +8,7 @@ const isIdValid = require("./utils/utils");
 //@access private
 const getAllNotes = asyncHandler(async (req, res) => {
   let notes;
-
-  //Getting just the notes of a user
-  const { user } = req.body;
-  if (user) {
-    //Valid user id format
-    if (!isIdValid(user)) {
-      return res.status(400).json({ message: "Invalid user ID format" });
-    }
-    notes = await Note.find({ user: user }).lean();
-    if (!notes?.length) {
-      return res.status(400).json({ message: "No notes found for the user" });
-    }
-    return res.json(notes);
-  }
-
-  //Getting all the notes with username
-  notes = await Note.aggregate([
+  const notesAggregationPipeline = [
     {
       $lookup: {
         from: "users",
@@ -44,7 +28,30 @@ const getAllNotes = asyncHandler(async (req, res) => {
         completedValue: 1,
       },
     },
-    {
+  ]
+  //Getting just the notes of a user
+  const { user } = req.query;
+  if (user) {
+    notes = await Note.aggregate([...notesAggregationPipeline, {
+      $match: {
+        "userInfo.username": user, 
+      },
+    },{
+      $project: {
+        userInfo: 0,
+        completedValue: 0,
+      },
+    },]);
+    
+    if (!notes?.length) {
+      return res.status(400).json({ message: "No notes found for the user" });
+    }
+    return res.json(notes);
+  }
+
+  //Getting all the notes with username
+  notes = await Note.aggregate([
+    ...notesAggregationPipeline, {
       $project: {
         userInfo: 0,
         completedValue: 0,
